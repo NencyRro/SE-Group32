@@ -1,25 +1,40 @@
 package com.feedback.util;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import javax.swing.JOptionPane;
 
 public class FileUtil {
-    public static void saveToFile(String fileName, String content) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true))) {
-            writer.write(content);
-            writer.newLine();
+    public static boolean saveToFile(String fileName, String content) {
+        try {
+            // Create directories if they don't exist
+            Path path = Paths.get(fileName);
+            Files.createDirectories(path.getParent());
+
+            // Append content to file
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true))) {
+                writer.write(content);
+                writer.newLine();
+                return true;
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(null,
+                    "Error saving to file: " + e.getMessage(),
+                    "File Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return false;
         }
     }
 
     public static String readFromFile(String fileName) {
         try {
-            return new String(Files.readAllBytes(Paths.get(fileName)));
+            Path path = Paths.get(fileName);
+            if (!Files.exists(path)) {
+                return "No content available.";
+            }
+            return new String(Files.readAllBytes(path));
         } catch (IOException e) {
-            e.printStackTrace();
-            return "Error reading file.";
+            return "Error reading file: " + e.getMessage();
         }
     }
 }
