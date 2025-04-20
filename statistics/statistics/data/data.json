@@ -1,0 +1,50 @@
+{
+    "year": 2024,
+    "bills": [
+      {
+        "month": "10月",
+        "income": 5000,
+        "expenses": [
+          {"category": "餐饮", "amount": 800},
+          {"category": "交通", "amount": 400},
+          {"category": "房租", "amount": 1600},
+          {"category": "购物", "amount": 500},
+          {"category": "娱乐", "amount": 500},
+          {"category": "通讯", "amount": 150},
+          {"category": "医疗", "amount": 250}
+        ],
+        "total_expenses": 4200,
+        "balance": 800
+      },
+      {
+        "month": "11月",
+        "income": 5000,
+        "expenses": [
+          {"category": "餐饮", "amount": 750},
+          {"category": "交通", "amount": 350},
+          {"category": "房租", "amount": 1600},
+          {"category": "日用品", "amount": 400},
+          {"category": "水电费", "amount": 300},
+          {"category": "学习", "amount": 200},
+          {"category": "社交", "amount": 800}
+        ],
+        "total_expenses": 4400,
+        "balance": 600
+      },
+      {
+        "month": "12月",
+        "income": 5000,
+        "expenses": [
+          {"category": "餐饮", "amount": 900},
+          {"category": "交通", "amount": 300},
+          {"category": "房租", "amount": 1600},
+          {"category": "服饰", "amount": 600},
+          {"category": "旅行", "amount": 300},
+          {"category": "保险", "amount": 200},
+          {"category": "数码", "amount": 200}
+        ],
+        "total_expenses": 4100,
+        "balance": 900
+      }
+    ]
+  }
