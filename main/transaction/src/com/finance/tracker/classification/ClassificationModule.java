@@ -32,16 +32,17 @@ public class ClassificationModule {
      * @param csvFilePath CSV file path
      */
     public ClassificationModule(String csvFilePath) {
-        // Initialize controller and manager
-        controller = new CategoryController();
-        CategoryManager categoryManager = new CategoryManager();
-        transactionManager = new TransactionManager(categoryManager, csvFilePath);
-        
-        // Initialize views
-        panel = new CategoryPanel(controller);
-        transactionForm = new TransactionForm(panel, transactionManager, controller);
-        transactionList = new TransactionList(transactionManager);
-        
+    // Initialize manager
+    CategoryManager categoryManager = new CategoryManager();
+    transactionManager = new TransactionManager(categoryManager, csvFilePath);
+
+    // Initialize views
+    transactionManager = new TransactionManager(categoryManager, csvFilePath);
+    transactionList = new TransactionList(transactionManager);
+    controller = new CategoryController(transactionManager, transactionList);                  
+    panel = new CategoryPanel(controller);
+    transactionForm = new TransactionForm(panel, transactionManager, controller);
+
         // Set category selection listener
         panel.setCategorySelectionListener(category -> {
             transactionForm.updateSaveButtonState();

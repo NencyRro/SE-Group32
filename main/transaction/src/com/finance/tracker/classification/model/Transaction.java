@@ -14,10 +14,13 @@ public class Transaction {
     private Category category;
     private BigDecimal amount;
     private String description;
+    private LocalDateTime importTimestamp;  // 新增字段：导入时间
     
     // Date time formatter
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    
+    // Import date time formatter
+    private static final DateTimeFormatter IMPORT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     /**
      * Creates a new transaction record
      * 
@@ -28,6 +31,16 @@ public class Transaction {
     public Transaction(Category category, BigDecimal amount, String description) {
         this.id = UUID.randomUUID().toString();
         this.dateTime = LocalDateTime.now();
+        this.importTimestamp = LocalDateTime.now();
+        this.category = category;
+        this.amount = amount;
+        this.description = description;
+    }
+    
+    public Transaction(String id, LocalDateTime dateTime, Category category, BigDecimal amount, String description) {
+        this.id = id;
+        this.dateTime = dateTime;
+        this.importTimestamp = LocalDateTime.now();  
         this.category = category;
         this.amount = amount;
         this.description = description;
@@ -42,13 +55,7 @@ public class Transaction {
      * @param amount Transaction amount
      * @param description Transaction description
      */
-    public Transaction(String id, LocalDateTime dateTime, Category category, BigDecimal amount, String description) {
-        this.id = id;
-        this.dateTime = dateTime;
-        this.category = category;
-        this.amount = amount;
-        this.description = description;
-    }
+
     
     /**
      * Converts the transaction record to a CSV line
@@ -112,6 +119,22 @@ public class Transaction {
     
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
+    }
+    
+    public LocalDateTime getImportTimestamp() {
+        return importTimestamp;
+    }
+    
+    public void setImportTimestamp(LocalDateTime importTimestamp) {
+        this.importTimestamp = importTimestamp;
+    }
+    
+    public String getFormattedImportTimestamp() {
+        if (importTimestamp != null) {
+            return importTimestamp.format(IMPORT_FORMATTER);
+        } else {
+            return "";
+        }
     }
     
     public String getDescription() {

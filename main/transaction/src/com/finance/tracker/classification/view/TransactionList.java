@@ -46,7 +46,8 @@ public class TransactionList extends JPanel {
         add(summaryPanel, BorderLayout.NORTH);
         
         // Create transaction record table
-        String[] columnNames = {"Time", "Type", "Category", "Amount", "Description"};
+        String[] columnNames = {"Time", "Type", "Category", "Amount", "Description", "Import Time"};
+
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -75,7 +76,8 @@ public class TransactionList extends JPanel {
         transactionTable.getColumnModel().getColumn(2).setPreferredWidth(100); // Category
         transactionTable.getColumnModel().getColumn(3).setPreferredWidth(100); // Amount
         transactionTable.getColumnModel().getColumn(4).setPreferredWidth(200); // Description
-        
+        transactionTable.getColumnModel().getColumn(5).setPreferredWidth(150); // Import Time
+
         // Set row height
         transactionTable.setRowHeight(25);
         
@@ -185,8 +187,10 @@ public class TransactionList extends JPanel {
                 t.getCategory().getType() == CategoryType.INCOME ? "Income" : "Expense",
                 t.getCategory().getName(),
                 t.getAmount(),
-                t.getDescription() != null ? t.getDescription() : ""
+                t.getDescription() != null ? t.getDescription() : "",
+                t.getFormattedImportTimestamp()  
             };
+            
             tableModel.addRow(rowData);
         }
         

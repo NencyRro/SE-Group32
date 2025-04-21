@@ -279,4 +279,8 @@ public class TransactionManager {
         
         return removed;
     }
+    public CategoryManager getCategoryManager() {
+        return this.categoryManager;
+    }
+    
 }

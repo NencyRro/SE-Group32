@@ -6,6 +6,7 @@ import com.finance.tracker.classification.model.CategoryType;
 import com.finance.tracker.classification.model.Transaction;
 import com.finance.tracker.classification.util.TransactionManager;
 import java.awt.*;
+import java.io.File;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import javax.swing.*;
@@ -22,7 +23,8 @@ public class TransactionForm extends JPanel {
     private JButton saveButton;
     private JButton clearButton;
     private TransactionManager transactionManager;
-    private CategoryController categoryController;
+    private final CategoryController categoryController;
+
     
     /**
      * Create transaction form
@@ -31,88 +33,98 @@ public class TransactionForm extends JPanel {
      * @param transactionManager Transaction record manager
      * @param categoryController Category controller
      */
-    public TransactionForm(CategoryPanel categoryPanel, 
-                          TransactionManager transactionManager,
-                          CategoryController categoryController) {
+    public TransactionForm(CategoryPanel categoryPanel, TransactionManager transactionManager, CategoryController categoryController) {
         this.categoryPanel = categoryPanel;
         this.transactionManager = transactionManager;
         this.categoryController = categoryController;
-        
-        initializeUI();
+    
+        initializeUI(); // 初始化界面组件
     }
+    
     
     /**
      * Initialize user interface
      */
     private void initializeUI() {
-        setLayout(new BorderLayout());
-        setBorder(BorderFactory.createTitledBorder("Add New Transaction"));
-        
-        // Create form panel
-        JPanel formPanel = new JPanel(new GridBagLayout());
-        formPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(5, 5, 5, 5);
-        
-        // Amount label and input field
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        JLabel amountLabel = new JLabel("Amount:");
-        formPanel.add(amountLabel, gbc);
-        
-        gbc.gridx = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
-        
-        // Create improved amount input field
-        amountField = createAmountField();
-        amountField.setColumns(15);
-        formPanel.add(amountField, gbc);
-        
-        // Description label and input field
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.weightx = 0;
-        gbc.fill = GridBagConstraints.NONE;
-        JLabel descLabel = new JLabel("Description:");
-        formPanel.add(descLabel, gbc);
-        
-        gbc.gridx = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
-        
-        descriptionField = new JTextField(20);
-        formPanel.add(descriptionField, gbc);
-        
-        // Add category tip
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.gridwidth = 2;
-        JLabel tipLabel = new JLabel("Please select a category from above");
-        tipLabel.setForeground(new Color(100, 100, 100));
-        formPanel.add(tipLabel, gbc);
-        
-        add(formPanel, BorderLayout.CENTER);
-        
-        // Add button panel
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        
-        saveButton = new JButton("Save");
-        clearButton = new JButton("Clear");
-        
-        saveButton.addActionListener(e -> saveTransaction());
-        clearButton.addActionListener(e -> clearForm());
-        
-        buttonPanel.add(saveButton);
-        buttonPanel.add(clearButton);
-        
-        add(buttonPanel, BorderLayout.SOUTH);
-        
-        // Initially disable save button
-        updateSaveButtonState();
-    }
+    setLayout(new BorderLayout());
+    setBorder(BorderFactory.createTitledBorder("Add New Transaction"));
+
+    // === 顶部工具栏：导入 CSV 按钮 ===
+    JPanel toolbarPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    JButton importButton = new JButton("导入 CSV");
+    importButton.addActionListener(e -> {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("CSV 文件", "csv"));
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            categoryController.importCSV(selectedFile, this);
+        }
+    });
+    toolbarPanel.add(importButton);
+    add(toolbarPanel, BorderLayout.NORTH);
+
+    // === 表单区域 ===
+    JPanel formPanel = new JPanel(new GridBagLayout());
+    formPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+    GridBagConstraints gbc = new GridBagConstraints();
+    gbc.anchor = GridBagConstraints.WEST;
+    gbc.insets = new Insets(5, 5, 5, 5);
+
+    // 金额标签和输入框
+    gbc.gridx = 0;
+    gbc.gridy = 0;
+    JLabel amountLabel = new JLabel("Amount:");
+    formPanel.add(amountLabel, gbc);
+
+    gbc.gridx = 1;
+    gbc.fill = GridBagConstraints.HORIZONTAL;
+    gbc.weightx = 1.0;
+    amountField = createAmountField();
+    amountField.setColumns(15);
+    formPanel.add(amountField, gbc);
+
+    // 描述标签和输入框
+    gbc.gridx = 0;
+    gbc.gridy = 1;
+    gbc.weightx = 0;
+    gbc.fill = GridBagConstraints.NONE;
+    JLabel descLabel = new JLabel("Description:");
+    formPanel.add(descLabel, gbc);
+
+    gbc.gridx = 1;
+    gbc.fill = GridBagConstraints.HORIZONTAL;
+    gbc.weightx = 1.0;
+    descriptionField = new JTextField(20);
+    formPanel.add(descriptionField, gbc);
+
+    // 提示文本
+    gbc.gridx = 0;
+    gbc.gridy = 2;
+    gbc.gridwidth = 2;
+    JLabel tipLabel = new JLabel("Please select a category from above");
+    tipLabel.setForeground(new Color(100, 100, 100));
+    formPanel.add(tipLabel, gbc);
+
+    add(formPanel, BorderLayout.CENTER);
+
+    // === 底部按钮区域 ===
+    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+    saveButton = new JButton("Save");
+    clearButton = new JButton("Clear");
+
+    saveButton.addActionListener(e -> saveTransaction());
+    clearButton.addActionListener(e -> clearForm());
+
+    buttonPanel.add(saveButton);
+    buttonPanel.add(clearButton);
+    add(buttonPanel, BorderLayout.SOUTH);
+
+    // 初始状态禁用保存按钮
+    updateSaveButtonState();
+}
+
     
     /**
      * Create improved amount input field

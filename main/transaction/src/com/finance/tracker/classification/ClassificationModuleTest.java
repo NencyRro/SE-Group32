@@ -42,61 +42,53 @@ public class ClassificationModuleTest {
      * Create and display test window
      */
     private static void createAndShowTestWindow() {
-        // Create main window
         JFrame frame = new JFrame("Personal Finance Tracking System");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
-        // Initialize managers
+    
+        // 初始化管理器
         CategoryManager categoryManager = new CategoryManager();
-        CategoryController categoryController = new CategoryController();
         TransactionManager transactionManager = new TransactionManager(categoryManager, CSV_PATH);
-        
-        // Create category selection panel
-        CategoryPanel categoryPanel = new CategoryPanel(categoryController);
-        
-        // Create transaction form - used to add new transaction records
-        TransactionForm transactionForm = new TransactionForm(categoryPanel, transactionManager, categoryController);
-        
-        // Create transaction list - used to view existing transaction records
+    
+        // 提前创建 TransactionList
         TransactionList transactionList = new TransactionList(transactionManager);
-        
-        // Set transaction selection listener
+    
+        // ✅ 把 transactionList 传给 CategoryController
+        CategoryController categoryController = new CategoryController(transactionManager, transactionList);
+    
+        // 创建视图组件
+        CategoryPanel categoryPanel = new CategoryPanel(categoryController);
+        TransactionForm transactionForm = new TransactionForm(categoryPanel, transactionManager, categoryController);
+    
+        // 设置类别选择监听器
         categoryPanel.setCategorySelectionListener(new CategorySelectionListener() {
             @Override
             public void onCategorySelected(Category category) {
-                // When a category is selected, update transaction form state
                 transactionForm.updateSaveButtonState();
             }
         });
-        
-        // Create split screen interface
+    
+        // 创建上下分屏 UI
         JSplitPane mainSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        
-        // Top half: category selection and transaction form
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.add(categoryPanel, BorderLayout.CENTER);
         topPanel.add(transactionForm, BorderLayout.SOUTH);
-        
-        // Bottom half: transaction record list
+    
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.add(transactionList, BorderLayout.CENTER);
-        
+    
         mainSplitPane.setTopComponent(topPanel);
         mainSplitPane.setBottomComponent(bottomPanel);
         mainSplitPane.setDividerLocation(350);
         mainSplitPane.setResizeWeight(0.5);
-        
-        // Add to window
+    
+        // 添加到窗口
         frame.getContentPane().add(mainSplitPane);
-        
-        // Set window size and position
         frame.setSize(800, 700);
         frame.setLocationRelativeTo(null);
-        
-        // Display file path information
+    
         System.out.println("Transaction data save location: " + new File(CSV_PATH).getAbsolutePath());
-        
-        // Display window
+    
         frame.setVisible(true);
     }
+    
 }
