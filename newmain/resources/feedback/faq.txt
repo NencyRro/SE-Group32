@@ -1,0 +1,8 @@
+Q: What is this application for?
+A: This application collects user feedback and allows problem submissions.
+
+Q: How can I submit feedback?
+A: Use the Feedback Form from the main menu.
+
+Q: Where is the data stored?
+A: Data is stored locally in text files.
