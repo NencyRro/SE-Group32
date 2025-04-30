@@ -3,6 +3,7 @@ package com.finance.tracker.classification.view;
 import com.finance.tracker.classification.controller.CategoryController;
 import com.finance.tracker.classification.util.CategoryManager;
 import com.finance.tracker.classification.util.TransactionManager;
+import com.finance.tracker.localization.CurrencyManager;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -11,6 +12,8 @@ import java.awt.*;
  * Transaction Form Window - Standalone window for transaction management
  */
 public class TransactionFormWindow extends JFrame {
+    
+    private CurrencyManager currencyManager;
     
     /**
      * Creates a standalone transaction form window
@@ -21,6 +24,9 @@ public class TransactionFormWindow extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(800, 600);
         setLocationRelativeTo(null);
+        
+        // 初始化货币管理器
+        currencyManager = CurrencyManager.getInstance();
         
         // 初始化数据和控制器
         TransactionManager transactionManager = new TransactionManager(
@@ -53,6 +59,74 @@ public class TransactionFormWindow extends JFrame {
         
         // 设置内容面板
         setContentPane(mainPanel);
+    }
+    
+    /**
+     * 刷新货币设置，用于当全局货币被更改时调用
+     */
+    public void refreshCurrencySettings() {
+        System.out.println("TransactionFormWindow: refreshing currency settings");
+        
+        try {
+            // 获取所有子组件并通知它们刷新货币设置
+            Component[] components = getContentPane().getComponents();
+            for (Component comp : components) {
+                if (comp instanceof JPanel) {
+                    notifyAllComponentsOfCurrencyChange((JPanel)comp);
+                }
+            }
+            
+            // 刷新窗口标题，添加当前货币信息
+            String currencyCode = currencyManager.getDefaultCurrency().getCode();
+            String currencySymbol = currencyManager.getDefaultCurrency().getSymbol();
+            setTitle("Transaction Management - Currency: " + currencyCode + " " + currencySymbol);
+            
+            // 重绘整个窗口
+            revalidate();
+            repaint();
+        } catch (Exception e) {
+            System.err.println("Error refreshing currency settings in TransactionFormWindow: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * A more robust implementation for notifying currency changes
+     */
+    private void notifyAllComponentsOfCurrencyChange(Container container) {
+        try {
+            // 遍历所有子组件
+            Component[] components = container.getComponents();
+            for (Component comp : components) {
+                // 针对不同类型的组件调用相应的刷新方法
+                if (comp instanceof TransactionList) {
+                    System.out.println("Refreshing TransactionList");
+                    ((TransactionList) comp).refresh();
+                } else if (comp instanceof TransactionForm) {
+                    System.out.println("Refreshing TransactionForm");
+                    ((TransactionForm) comp).refreshCurrencyDisplay();
+                } else if (comp instanceof JTable) {
+                    // 表格需要重绘以更新货币显示
+                    ((JTable) comp).repaint();
+                } else if (comp instanceof JLabel) {
+                    // 检查标签是否包含货币信息
+                    JLabel label = (JLabel) comp;
+                    if (label.getText() != null && 
+                        (label.getText().contains("$") || 
+                         label.getText().contains("¥") || 
+                         label.getText().contains("€") || 
+                         label.getText().contains("£") || 
+                         label.getText().contains("HK$"))) {
+                        label.repaint();
+                    }
+                } else if (comp instanceof Container) {
+                    // 递归处理所有子容器
+                    notifyAllComponentsOfCurrencyChange((Container) comp);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error notifying components: " + e.getMessage());
+        }
     }
     
     /**

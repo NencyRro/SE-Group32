@@ -10,6 +10,8 @@ import com.finance.tracker.feedback.FeedbackForm;
 import com.finance.tracker.integration.AIModuleFacade;
 import com.finance.tracker.report.ReportAndNotificationUI;
 import com.finance.tracker.report.Transaction;
+import com.finance.module.ai.FinanceAnalyzer;
+import com.feedback.ui.MainFrame;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -85,7 +87,7 @@ public class TransactionDashboardPanel extends JPanel {
         headerPanel.setBorder(new EmptyBorder(0, 0, 20, 0));
         
         // 创建大标题
-        JLabel titleLabel = new JLabel("Add & Manage Transactions", JLabel.CENTER);
+        JLabel titleLabel = new JLabel("Manage Transactions", JLabel.CENTER);
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 26));
         titleLabel.setForeground(new Color(44, 62, 80));
         
@@ -345,18 +347,24 @@ public class TransactionDashboardPanel extends JPanel {
      * 打开推荐面板
      */
     private void openRecommendationPanel() {
-        // 切换到主界面的推荐页面
-        if (parentFrame != null) {
-            parentFrame.showPanel("recommendation");
-            updateStatusBar("Recommendation panel opened");
-        } else {
-            // 如果未找到主界面，显示消息
+        try {
+            // 创建并显示AI分析工具窗口
+            FinanceAnalyzer analyzer = new FinanceAnalyzer();
+            analyzer.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // 关闭窗口不影响主应用
+            analyzer.setLocationRelativeTo(this); // 窗口居中显示
+            analyzer.setVisible(true);
+            
+            // 更新状态栏
+            updateStatusBar("AI Recommendation tool opened");
+        } catch (Exception e) {
+            // 显示错误信息
             JOptionPane.showMessageDialog(
                 this,
-                "Could not access recommendation panel",
-                "Navigation Error",
+                "Error opening AI recommendation tool: " + e.getMessage(),
+                "Error",
                 JOptionPane.ERROR_MESSAGE
             );
+            e.printStackTrace();
         }
     }
     
@@ -364,12 +372,12 @@ public class TransactionDashboardPanel extends JPanel {
      * 打开反馈表单
      */
     private void openFeedbackForm() {
-        // 创建并显示反馈表单窗口
-        FeedbackForm feedbackForm = new FeedbackForm(parentFrame);
-        feedbackForm.setVisible(true);
+        // 创建并显示反馈系统主窗口
+        MainFrame feedbackSystem = new MainFrame();
+        feedbackSystem.setVisible(true);
         
         // 更新状态栏
-        updateStatusBar("Feedback form opened");
+        updateStatusBar("Feedback system opened");
     }
     
     /**
@@ -422,5 +430,18 @@ public class TransactionDashboardPanel extends JPanel {
         
         // 示例：更新标题
         // titleLabel.setText(parentFrame.getLanguageManager().getText("key_dashboard_title"));
+    }
+
+    /**
+     * 刷新货币设置，用于当货币单位发生变化时调用
+     */
+    public void refreshCurrencySettings() {
+        try {
+            // 记录刷新货币时间
+            lastSyncTime = LocalDateTime.now();
+            updateStatusBar("Currency settings updated");
+        } catch (Exception e) {
+            System.err.println("Error refreshing currency settings: " + e.getMessage());
+        }
     }
 } 

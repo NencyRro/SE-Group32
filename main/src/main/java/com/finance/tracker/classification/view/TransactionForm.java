@@ -5,6 +5,8 @@ import com.finance.tracker.classification.model.Category;
 import com.finance.tracker.classification.model.CategoryType;
 import com.finance.tracker.classification.model.Transaction;
 import com.finance.tracker.classification.util.TransactionManager;
+import com.finance.tracker.localization.CurrencyManager;
+import com.finance.tracker.localization.Currency;
 import java.awt.*;
 import java.io.File;
 import java.math.BigDecimal;
@@ -19,11 +21,12 @@ import javax.swing.text.*;
 public class TransactionForm extends JPanel {
     private CategoryPanel categoryPanel;
     private JTextField amountField;
-    private JTextField descriptionField;
+    private JTextArea descriptionArea;
     private JButton saveButton;
     private JButton clearButton;
     private TransactionManager transactionManager;
     private final CategoryController categoryController;
+    private CurrencyManager currencyManager;
     
     /**
      * Create transaction form
@@ -36,6 +39,7 @@ public class TransactionForm extends JPanel {
         this.categoryPanel = categoryPanel;
         this.transactionManager = transactionManager;
         this.categoryController = categoryController;
+        this.currencyManager = CurrencyManager.getInstance();
     
         initializeUI(); // 初始化界面组件
     }
@@ -94,8 +98,11 @@ public class TransactionForm extends JPanel {
         gbc.gridx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
-        descriptionField = new JTextField(20);
-        formPanel.add(descriptionField, gbc);
+        descriptionArea = new JTextArea(3, 20);
+        descriptionArea.setLineWrap(true);
+        descriptionArea.setWrapStyleWord(true);
+        JScrollPane scrollPane = new JScrollPane(descriptionArea);
+        formPanel.add(scrollPane, gbc);
 
         // 提示文本
         gbc.gridx = 0;
@@ -121,6 +128,9 @@ public class TransactionForm extends JPanel {
 
         // 初始状态禁用保存按钮
         updateSaveButtonState();
+
+        // 刷新货币显示
+        refreshCurrencyDisplay();
     }
     
     /**
@@ -249,7 +259,7 @@ public class TransactionForm extends JPanel {
         }
         
         // Get description
-        String description = descriptionField.getText().trim();
+        String description = descriptionArea.getText().trim();
         
         // Create and save transaction record
         Transaction transaction = new Transaction(
@@ -281,7 +291,7 @@ public class TransactionForm extends JPanel {
      */
     private void clearForm() {
         amountField.setText("");
-        descriptionField.setText("");
+        descriptionArea.setText("");
         categoryPanel.clearSelection();
         updateSaveButtonState();
     }
@@ -305,5 +315,24 @@ public class TransactionForm extends JPanel {
         }
         
         saveButton.setEnabled(hasCategory && hasValidAmount);
+    }
+
+    /**
+     * 刷新货币显示
+     */
+    public void refreshCurrencyDisplay() {
+        try {
+            // 更新货币符号
+            Currency currency = currencyManager.getDefaultCurrency();
+            if (currency != null) {
+                amountField.setText(currency.getSymbol() + " ");
+            }
+            
+            // 重绘界面
+            revalidate();
+            repaint();
+        } catch (Exception e) {
+            System.err.println("Error refreshing currency display: " + e.getMessage());
+        }
     }
 }

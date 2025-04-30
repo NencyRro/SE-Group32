@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.finance.tracker.localization.LanguageManager;
+import com.finance.tracker.classification.view.TransactionFormWindow;
+import com.finance.module.ai.FinanceAnalyzer;
 
 /**
  * Currency Settings Panel
@@ -179,27 +181,107 @@ public class CurrencyPanel extends JPanel {
     private void applyCurrencySettings() {
         String selectedCurrency = (String) currencyComboBox.getSelectedItem();
         if (selectedCurrency != null) {
+            // 更新主框架的货币设置
             parentFrame.setCurrency(selectedCurrency);
             
-            // 获取并刷新交易面板显示
+            // 获取并刷新所有交易面板显示
             try {
-                // 尝试获取 TransactionPanel 实例并刷新显示
-                Component[] components = parentFrame.getMainContentPanel().getComponents();
-                for (Component comp : components) {
-                    if (comp instanceof TransactionPanel) {
-                        TransactionPanel transactionPanel = (TransactionPanel) comp;
-                        transactionPanel.refreshTransactionDisplay();
-                        break;
-                    }
-                }
+                // 1. 刷新主界面中的交易面板
+                refreshMainFramePanels();
+                
+                // 2. 刷新所有已打开的独立窗口
+                refreshAllOpenWindows();
+                
+                // 3. 显示成功信息
+                JOptionPane.showMessageDialog(this,
+                    languageManager.getText(LanguageManager.CURRENCY_UPDATED) + ": " + selectedCurrency,
+                    languageManager.getText(LanguageManager.SETTINGS_UPDATED),
+                    JOptionPane.INFORMATION_MESSAGE);
             } catch (Exception e) {
-                System.err.println("Error refreshing transaction panel: " + e.getMessage());
+                System.err.println("Error refreshing currency displays: " + e.getMessage());
+                e.printStackTrace();
             }
-            
-            JOptionPane.showMessageDialog(this,
-                languageManager.getText(LanguageManager.CURRENCY_UPDATED) + ": " + selectedCurrency,
-                languageManager.getText(LanguageManager.SETTINGS_UPDATED),
-                JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+    
+    /**
+     * 刷新主框架中的所有交易面板
+     */
+    private void refreshMainFramePanels() {
+        try {
+            Component[] components = parentFrame.getMainContentPanel().getComponents();
+            for (Component comp : components) {
+                if (comp instanceof TransactionPanel) {
+                    // 刷新交易面板
+                    TransactionPanel transactionPanel = (TransactionPanel) comp;
+                    transactionPanel.refreshTransactionDisplay();
+                    System.out.println("Refreshed TransactionPanel");
+                } else if (comp instanceof TransactionDashboardPanel) {
+                    // 刷新交易仪表盘面板
+                    ((TransactionDashboardPanel) comp).refreshCurrencySettings();
+                    System.out.println("Refreshed TransactionDashboardPanel");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error refreshing main frame panels: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 刷新所有已打开的独立窗口
+     */
+    private void refreshAllOpenWindows() {
+        try {
+            // 遍历所有已打开的窗口
+            Frame[] frames = Frame.getFrames();
+            for (Frame frame : frames) {
+                if (frame instanceof TransactionFormWindow && frame.isVisible()) {
+                    // 刷新交易表单窗口
+                    ((TransactionFormWindow) frame).refreshCurrencySettings();
+                    System.out.println("Refreshed TransactionFormWindow");
+                } else if (frame instanceof FinanceAnalyzer && frame.isVisible()) {
+                    // 刷新财务分析器窗口
+                    ((FinanceAnalyzer) frame).refreshCurrencyDisplay();
+                    System.out.println("Refreshed FinanceAnalyzer");
+                } else if (frame instanceof JFrame && frame.isVisible() && 
+                           !(frame instanceof MainModuleUI)) {
+                    // 尝试刷新其他类型的窗口（如果它们支持货币更新）
+                    refreshFrameComponents(frame);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error refreshing open windows: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 递归刷新框架中的所有组件
+     */
+    private void refreshFrameComponents(Container container) {
+        try {
+            Component[] components = container.getComponents();
+            for (Component comp : components) {
+                // 处理可能具有刷新货币功能的组件
+                if (comp instanceof JTable) {
+                    ((JTable) comp).repaint(); // 刷新表格显示
+                } else if (comp instanceof JLabel) {
+                    JLabel label = (JLabel) comp;
+                    // 如果标签可能包含货币信息，刷新它
+                    if (label.getText() != null && 
+                        (label.getText().contains("$") || 
+                         label.getText().contains("¥") || 
+                         label.getText().contains("€") ||
+                         label.getText().contains("£") ||
+                         label.getText().contains("HK$"))) {
+                        label.repaint();
+                    }
+                } else if (comp instanceof Container) {
+                    // 递归处理子容器
+                    refreshFrameComponents((Container) comp);
+                }
+            }
+        } catch (Exception e) {
+            // 忽略刷新组件时的异常
         }
     }
 } 

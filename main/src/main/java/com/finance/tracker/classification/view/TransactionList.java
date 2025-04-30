@@ -5,6 +5,8 @@ import com.finance.tracker.classification.model.Transaction;
 import com.finance.tracker.classification.util.TransactionDataCenter;
 import com.finance.tracker.classification.util.TransactionManager;
 import com.finance.tracker.integration.AIModuleFacade;
+import com.finance.tracker.localization.CurrencyManager;
+import com.finance.tracker.localization.Currency;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -26,6 +28,7 @@ public class TransactionList extends JPanel {
     private JLabel expenseLabel;
     private List<Transaction> currentTransactions;
     private CategoryType currentFilterType = null;
+    private CurrencyManager currencyManager;
     
     /**
      * Create transaction list
@@ -35,6 +38,7 @@ public class TransactionList extends JPanel {
     public TransactionList(TransactionManager transactionManager) {
         this.transactionManager = transactionManager;
         this.dataCenter = TransactionDataCenter.getInstance();
+        this.currencyManager = CurrencyManager.getInstance();
         
         // 注册为数据变化监听器
         dataCenter.addTransactionChangeListener(new TransactionDataCenter.TransactionChangeListener() {
@@ -120,10 +124,17 @@ public class TransactionList extends JPanel {
                 // Set text alignment
                 setHorizontalAlignment(SwingConstants.RIGHT);
                 
-                // Format amount
+                // Format amount with current currency and apply conversion
                 if (value instanceof BigDecimal) {
                     BigDecimal amount = (BigDecimal) value;
-                    setText(df.format(amount));
+                    // 获取默认货币（存储使用的货币，通常是CNY）
+                    String baseCurrency = "CNY";
+                    // 获取当前显示货币
+                    String displayCurrency = currencyManager.getDefaultCurrency().getCode();
+                    // 转换金额
+                    BigDecimal convertedAmount = currencyManager.convert(amount, baseCurrency, displayCurrency);
+                    // 格式化并显示
+                    setText(currencyManager.format(convertedAmount, displayCurrency));
                 }
                 
                 return c;
@@ -140,13 +151,13 @@ public class TransactionList extends JPanel {
         JPanel panel = new JPanel(new GridLayout(1, 3, 10, 0));
         panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         
-        balanceLabel = new JLabel("Balance: ¥0.00", JLabel.CENTER);
+        balanceLabel = new JLabel("Balance: 0.00", JLabel.CENTER);
         balanceLabel.setFont(new Font(balanceLabel.getFont().getName(), Font.BOLD, 14));
         
-        incomeLabel = new JLabel("Total Income: ¥0.00", JLabel.CENTER);
+        incomeLabel = new JLabel("Total Income: 0.00", JLabel.CENTER);
         incomeLabel.setForeground(new Color(0, 150, 0));
         
-        expenseLabel = new JLabel("Total Expense: ¥0.00", JLabel.CENTER);
+        expenseLabel = new JLabel("Total Expense: 0.00", JLabel.CENTER);
         expenseLabel.setForeground(new Color(255, 50, 50));
         
         panel.add(incomeLabel);
@@ -223,13 +234,13 @@ public class TransactionList extends JPanel {
         // Store current transactions
         currentTransactions = transactions;
         
-        // Add to the table
+        // Add to the table - 不在此处转换货币，由TableCellRenderer负责
         for (Transaction t : transactions) {
             Object[] rowData = {
                 t.getFormattedDateTime(),
                 t.getCategory().getType() == CategoryType.INCOME ? "Income" : "Expense",
                 t.getCategory().getName(),
-                t.getAmount(),
+                t.getAmount(), // 保持原始金额，不在此处转换
                 t.getDescription() != null ? t.getDescription() : "",
                 t.getFormattedImportTimestamp()  
             };
@@ -245,23 +256,24 @@ public class TransactionList extends JPanel {
      * Update summary information
      */
     private void updateSummary() {
-        DecimalFormat df = new DecimalFormat("¥#,##0.00");
+        // 获取基础货币（通常是CNY）和当前显示货币
+        String baseCurrency = "CNY";
+        String displayCurrency = currencyManager.getDefaultCurrency().getCode();
         
+        // 获取原始金额（以基础货币计算）
         BigDecimal income = dataCenter.getTotalIncome();
         BigDecimal expense = dataCenter.getTotalExpense();
         BigDecimal balance = dataCenter.getBalance();
         
-        incomeLabel.setText("Total Income: " + df.format(income));
-        expenseLabel.setText("Total Expense: " + df.format(expense));
+        // 转换为当前显示货币并格式化
+        BigDecimal convertedIncome = currencyManager.convert(income, baseCurrency, displayCurrency);
+        BigDecimal convertedExpense = currencyManager.convert(expense, baseCurrency, displayCurrency);
+        BigDecimal convertedBalance = currencyManager.convert(balance, baseCurrency, displayCurrency);
         
-        balanceLabel.setText("Balance: " + df.format(balance));
-        
-        // Display negative balance in red
-        if (balance.compareTo(BigDecimal.ZERO) < 0) {
-            balanceLabel.setForeground(new Color(255, 50, 50));
-        } else {
-            balanceLabel.setForeground(new Color(0, 150, 0));
-        }
+        // 更新标签显示
+        incomeLabel.setText("Total Income: " + currencyManager.format(convertedIncome, displayCurrency));
+        expenseLabel.setText("Total Expense: " + currencyManager.format(convertedExpense, displayCurrency));
+        balanceLabel.setText("Balance: " + currencyManager.format(convertedBalance, displayCurrency));
     }
     
     /**

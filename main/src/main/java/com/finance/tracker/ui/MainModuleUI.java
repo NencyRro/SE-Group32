@@ -936,7 +936,37 @@ public class MainModuleUI extends JFrame {
      */
     public void setCurrency(String currency) {
         this.currentCurrency = currency;
+        
+        // 更新CurrencyManager的默认货币，确保全局一致
+        try {
+            // 从显示名称解析出货币代码 (例如: "US Dollar ($)" -> "USD")
+            String currencyCode = getCurrencyCodeFromDisplayName(currency);
+            if (currencyCode != null) {
+                com.finance.tracker.localization.CurrencyManager.getInstance().setDefaultCurrency(currencyCode);
+                System.out.println("Currency code set to: " + currencyCode);
+            }
+        } catch (Exception e) {
+            System.err.println("Error setting default currency: " + e.getMessage());
+        }
+        
+        // 立即更新状态栏
         updateStatusBar();
+    }
+    
+    /**
+     * 从显示名称解析货币代码
+     */
+    private String getCurrencyCodeFromDisplayName(String displayName) {
+        if (displayName == null) return "CNY"; // 默认值
+        
+        if (displayName.contains("Yuan")) return "CNY";
+        if (displayName.contains("Dollar") && displayName.contains("US")) return "USD";
+        if (displayName.contains("Euro")) return "EUR";
+        if (displayName.contains("Pound")) return "GBP";
+        if (displayName.contains("Yen")) return "JPY";
+        if (displayName.contains("Hong Kong")) return "HKD";
+        
+        return "CNY"; // 默认值
     }
     
     /**
