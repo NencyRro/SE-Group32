@@ -5,6 +5,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.Arrays;
+import java.util.ArrayList;
 
 public class ReportAndNotificationUI extends JFrame {
     private final ReportAndNotificationService service;
@@ -67,10 +68,35 @@ public class ReportAndNotificationUI extends JFrame {
         checkBudgetBtn.addActionListener(actionEvent -> {
             try {
                 double budgetLimit = Double.parseDouble(budgetLimitField.getText());
-                String notification = service.generateBudgetAlertNotification(transactions, budgetLimit);
+                
+                // 从数据中心获取最新交易数据
+                List<Transaction> latestTransactions = new ArrayList<>();
+                List<com.finance.tracker.classification.model.Transaction> sourceTransactions = 
+                    com.finance.tracker.classification.util.TransactionDataCenter.getInstance().getAllTransactions();
+                
+                // 转换交易数据格式
+                for (com.finance.tracker.classification.model.Transaction t : sourceTransactions) {
+                    // 日期格式转换
+                    java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                    String dateStr = t.getDateTime().toLocalDate().format(formatter);
+                    
+                    // 创建报告模块需要的Transaction对象
+                    latestTransactions.add(new Transaction(
+                        dateStr,
+                        t.getCategory().getName(),
+                        t.getAmount().doubleValue(),
+                        t.getDescription() != null ? t.getDescription() : ""
+                    ));
+                }
+                
+                // 使用最新数据检查预算
+                String notification = service.generateBudgetAlertNotification(latestTransactions, budgetLimit);
                 JOptionPane.showMessageDialog(this, notification, "Budget Alert", JOptionPane.INFORMATION_MESSAGE);
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Please enter a valid budget amount", "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error checking budget: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
             }
         });
 

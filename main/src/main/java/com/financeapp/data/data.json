@@ -1,0 +1,50 @@
+{
+    "year": 2024,
+    "bills": [
+      {
+        "month": "10",
+        "income": 5000,
+        "expenses": [
+          {"category": "Food", "amount": 800},
+          {"category": "Transport", "amount": 400},
+          {"category": "Rent", "amount": 1600},
+          {"category": "Clothes", "amount": 500},
+          {"category": "Travel", "amount": 500},
+          {"category": "Insurance", "amount": 150},
+          {"category": "Digital Devices", "amount": 250}
+        ],
+        "total_expenses": 4200,
+        "balance": 800
+      },
+      {
+        "month": "11",
+        "income": 5000,
+        "expenses": [
+          {"category": "Food", "amount": 750},
+          {"category": "Transport", "amount": 350},
+          {"category": "Rent", "amount": 1600},
+          {"category": "Clothes", "amount": 400},
+          {"category": "Travel", "amount": 300},
+          {"category": "Insurance", "amount": 200},
+          {"category": "Digital Devices", "amount": 800}
+        ],
+        "total_expenses": 4400,
+        "balance": 600
+      },
+      {
+        "month": "12",
+        "income": 5000,
+        "expenses": [
+          {"category": "Food", "amount": 900},
+          {"category": "Transport", "amount": 300},
+          {"category": "Rent", "amount": 1600},
+          {"category": "Clothes", "amount": 600},
+          {"category": "Travel", "amount": 300},
+          {"category": "Insurance", "amount": 200},
+          {"category": "Digital Devices", "amount": 200}
+        ],
+        "total_expenses": 4100,
+        "balance": 900
+      }
+    ]
+  } 

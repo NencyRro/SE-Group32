@@ -2,6 +2,7 @@ package com.finance.tracker.classification.view;
 
 import com.finance.tracker.classification.model.CategoryType;
 import com.finance.tracker.classification.model.Transaction;
+import com.finance.tracker.classification.util.TransactionDataCenter;
 import com.finance.tracker.classification.util.TransactionManager;
 import com.finance.tracker.integration.AIModuleFacade;
 import java.awt.*;
@@ -17,6 +18,7 @@ import javax.swing.table.DefaultTableModel;
  */
 public class TransactionList extends JPanel {
     private TransactionManager transactionManager;
+    private TransactionDataCenter dataCenter;
     private JTable transactionTable;
     private DefaultTableModel tableModel;
     private JLabel balanceLabel;
@@ -28,10 +30,20 @@ public class TransactionList extends JPanel {
     /**
      * Create transaction list
      * 
-     * @param transactionManager Transaction record manager
+     * @param transactionManager Transaction record manager (将被保留用于兼容)
      */
     public TransactionList(TransactionManager transactionManager) {
         this.transactionManager = transactionManager;
+        this.dataCenter = TransactionDataCenter.getInstance();
+        
+        // 注册为数据变化监听器
+        dataCenter.addTransactionChangeListener(new TransactionDataCenter.TransactionChangeListener() {
+            @Override
+            public void onTransactionDataChanged(TransactionDataCenter.ChangeType type, Transaction transaction) {
+                // 当数据发生变化时刷新列表
+                refresh();
+            }
+        });
         
         initializeUI();
         loadTransactions();
@@ -200,8 +212,16 @@ public class TransactionList extends JPanel {
         // Clear the table
         tableModel.setRowCount(0);
         
-        // Get all transaction records
-        List<Transaction> transactions = transactionManager.getAllTransactions();
+        // Get transaction records from the data center
+        List<Transaction> transactions;
+        if (type == null) {
+            transactions = dataCenter.getAllTransactions();
+        } else {
+            transactions = dataCenter.getTransactionsByType(type);
+        }
+        
+        // Store current transactions
+        currentTransactions = transactions;
         
         // Add to the table
         for (Transaction t : transactions) {
@@ -227,9 +247,9 @@ public class TransactionList extends JPanel {
     private void updateSummary() {
         DecimalFormat df = new DecimalFormat("¥#,##0.00");
         
-        BigDecimal income = transactionManager.getTotalIncome();
-        BigDecimal expense = transactionManager.getTotalExpense();
-        BigDecimal balance = transactionManager.getBalance();
+        BigDecimal income = dataCenter.getTotalIncome();
+        BigDecimal expense = dataCenter.getTotalExpense();
+        BigDecimal balance = dataCenter.getBalance();
         
         incomeLabel.setText("Total Income: " + df.format(income));
         expenseLabel.setText("Total Expense: " + df.format(expense));
@@ -283,13 +303,12 @@ public class TransactionList extends JPanel {
             for (int i = selectedRows.length - 1; i >= 0; i--) {
                 int modelRow = transactionTable.convertRowIndexToModel(selectedRows[i]);
                 
-                // 获取当前的所有交易记录
-                List<Transaction> currentTransactions = transactionManager.getAllTransactions();
+                // 获取当前的交易记录
                 if (modelRow >= 0 && modelRow < currentTransactions.size()) {
                     Transaction transaction = currentTransactions.get(modelRow);
                     
-                    // 从TransactionManager中删除
-                    transactionManager.deleteTransaction(transaction);
+                    // 通过数据中心删除
+                    dataCenter.deleteTransaction(transaction);
                     
                     // 从表格模型中删除
                     tableModel.removeRow(modelRow);
@@ -304,11 +323,7 @@ public class TransactionList extends JPanel {
                 JOptionPane.INFORMATION_MESSAGE
             );
             
-            // 更新AI推荐
-            updateAIRecommendations();
-            
-            // 可选：全量同步交易到AI模型，确保AI模型数据同步
-            syncAllTransactionsToAI();
+            // 数据中心会自动处理同步和通知
             
         } catch (Exception e) {
             JOptionPane.showMessageDialog(
@@ -326,8 +341,8 @@ public class TransactionList extends JPanel {
      */
     private void syncAllTransactionsToAI() {
         try {
-            // 使用TransactionManager的方法
-            transactionManager.syncAllTransactionsToAIModel();
+            // 使用数据中心的方法
+            dataCenter.syncAllTransactionsToAIModel();
             System.out.println("已全量同步交易到AI模型");
         } catch (Exception e) {
             System.err.println("全量同步到AI模型失败: " + e.getMessage());

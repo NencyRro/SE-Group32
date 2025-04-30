@@ -49,10 +49,10 @@ public class TransactionForm extends JPanel {
 
         // === 顶部工具栏：导入 CSV 按钮 ===
         JPanel toolbarPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton importButton = new JButton("导入 CSV");
+        JButton importButton = new JButton("Import CSV");
         importButton.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("CSV 文件", "csv"));
+            fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("CSV Files", "csv"));
             int result = fileChooser.showOpenDialog(this);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();

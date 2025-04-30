@@ -37,6 +37,17 @@ public class TransactionManager {
         this.categoryManager = categoryManager;
         this.csvFilePath = csvFilePath;
         loadTransactions(); // Load existing transactions from CSV
+        
+        // 初始化并注册到数据中心
+        initializeDataCenter();
+    }
+    
+    /**
+     * 初始化数据中心
+     */
+    private void initializeDataCenter() {
+        // 将自身注册到数据中心
+        TransactionDataCenter.getInstance().initialize(this);
     }
     
     /**
