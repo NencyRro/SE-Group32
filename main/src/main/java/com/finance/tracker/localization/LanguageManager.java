@@ -114,7 +114,7 @@ public class LanguageManager {
         addTranslation(GENERATE_AI, "Generate AI Recommendations", "生成AI推荐");
         addTranslation(VIEW_HOLIDAYS, "View Upcoming Holidays", "查看即将到来的节日");
         addTranslation(CHANGE_CURRENCY, "Change Currency", "更改货币");
-        addTranslation(ADD_TRANSACTION, "Add Transaction", "添加交易");
+        addTranslation(ADD_TRANSACTION, "Manage Transaction", "添加交易");
         addTranslation(READY, "Ready", "就绪");
         addTranslation(CURRENCY, "Currency", "货币");
         addTranslation(LAST_RECOMMENDATION, "Last recommendation", "上次推荐");
