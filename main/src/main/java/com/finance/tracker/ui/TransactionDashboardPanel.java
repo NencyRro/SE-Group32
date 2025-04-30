@@ -256,16 +256,25 @@ public class TransactionDashboardPanel extends JPanel {
      * 打开图表面板
      */
     private void openChartPanel() {
-        // TODO: 实现图表面板
-        JOptionPane.showMessageDialog(
-            this,
-            "Chart panel will be implemented in future versions",
-            "Coming Soon",
-            JOptionPane.INFORMATION_MESSAGE
-        );
-        
-        // 更新状态栏
-        updateStatusBar("Chart panel feature coming soon");
+        try {
+            // 使用数据中心获取数据，而不是直接从TransactionManager获取
+            com.financeapp.util.ChartGenerator.refreshDataFromDataCenter();
+            
+            // 直接打开统计图表窗口
+            com.financeapp.FinanceAppGUI chartUI = new com.financeapp.FinanceAppGUI();
+            chartUI.setVisible(true);
+            
+            // 更新状态栏
+            updateStatusBar("Statistics chart opened");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(
+                this,
+                "Error opening statistics chart: " + e.getMessage(),
+                "Error",
+                JOptionPane.ERROR_MESSAGE
+            );
+            e.printStackTrace();
+        }
     }
     
     /**
@@ -276,18 +285,9 @@ public class TransactionDashboardPanel extends JPanel {
             // 创建交易列表以将分类模块的交易转换为报告UI需要的格式
             List<com.finance.tracker.report.Transaction> reportTransactions = new ArrayList<>();
             
-            // 获取收入交易
-            List<com.finance.tracker.classification.model.Transaction> incomeTransactions = 
-                transactionManager.getTransactionsByType(CategoryType.INCOME);
-            
-            // 获取支出交易
-            List<com.finance.tracker.classification.model.Transaction> expenseTransactions = 
-                transactionManager.getTransactionsByType(CategoryType.EXPENSE);
-            
-            // 合并所有交易
-            List<com.finance.tracker.classification.model.Transaction> allTransactions = new ArrayList<>();
-            allTransactions.addAll(incomeTransactions);
-            allTransactions.addAll(expenseTransactions);
+            // 从数据中心获取所有交易
+            List<com.finance.tracker.classification.model.Transaction> allTransactions = 
+                com.finance.tracker.classification.util.TransactionDataCenter.getInstance().getAllTransactions();
             
             // 转换交易格式
             for (com.finance.tracker.classification.model.Transaction t : allTransactions) {

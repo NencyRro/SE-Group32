@@ -63,7 +63,7 @@ public class ReportAndNotificationService {
     }
     
     /**
-     * 生成预算提醒通知 - 只检查支出类别
+     * 生成预算提醒通知 - 检查单个类别和总支出
      */
     public String generateBudgetAlertNotification(List<Transaction> transactions, double budgetLimit) {
         // 过滤出支出类别的交易（排除收入类别）
@@ -77,9 +77,22 @@ public class ReportAndNotificationService {
                 Collectors.summingDouble(Transaction::getAmount)
             ));
 
-        StringBuilder alerts = new StringBuilder("Budget Alert:\n");
+        StringBuilder alerts = new StringBuilder();
         boolean hasAlert = false;
 
+        // 计算总支出
+        double totalExpense = expenseTransactions.stream()
+            .mapToDouble(Transaction::getAmount)
+            .sum();
+            
+        // 检查总支出是否超过预算
+        if (totalExpense > budgetLimit) {
+            alerts.append(String.format("Warning: Total expense %.2f exceeds budget limit %.2f\n", 
+                totalExpense, budgetLimit));
+            hasAlert = true;
+        }
+
+        // 检查每个类别支出是否超过预算
         for (Map.Entry<String, Double> entry : categorySpending.entrySet()) {
             if (entry.getValue() > budgetLimit) {
                 alerts.append(String.format("Warning: %s category spending %.2f exceeds budget limit %.2f\n", 
@@ -88,7 +101,7 @@ public class ReportAndNotificationService {
             }
         }
 
-        return hasAlert ? alerts.toString() : "All expense categories are within budget limits.";
+        return hasAlert ? "Budget Alert:\n" + alerts.toString() : "All expense categories are within budget limits.";
     }
     
     /**
