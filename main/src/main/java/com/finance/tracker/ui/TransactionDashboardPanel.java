@@ -5,8 +5,11 @@ import com.finance.tracker.classification.view.TransactionList;
 import com.finance.tracker.classification.util.CSVImportManager;
 import com.finance.tracker.classification.util.CategoryManager;
 import com.finance.tracker.classification.util.TransactionManager;
+import com.finance.tracker.classification.model.CategoryType;
 import com.finance.tracker.feedback.FeedbackForm;
 import com.finance.tracker.integration.AIModuleFacade;
+import com.finance.tracker.report.ReportAndNotificationUI;
+import com.finance.tracker.report.Transaction;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -15,6 +18,8 @@ import java.awt.*;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 交易导览界面 - 提供交易管理相关功能的入口点
@@ -112,13 +117,13 @@ public class TransactionDashboardPanel extends JPanel {
         );
         chartBtn.addActionListener(e -> openChartPanel());
         
-        // 创建按钮：导入CSV
-        JButton importCsvBtn = createFeatureButton(
-            "Import CSV", 
+        // 创建按钮：导出报告（替换原来的导入CSV按钮）
+        JButton exportReportBtn = createFeatureButton(
+            "Export Report", 
             "",
-            "Import transactions from CSV file"
+            "Export and view transaction reports"
         );
-        importCsvBtn.addActionListener(e -> importCsvFile());
+        exportReportBtn.addActionListener(e -> openReportUI());
         
         // 创建按钮：查看交易记录详情
         JButton viewTransactionsBtn = createFeatureButton(
@@ -147,7 +152,7 @@ public class TransactionDashboardPanel extends JPanel {
         // 添加按钮到面板
         buttonPanel.add(addTransactionBtn);
         buttonPanel.add(chartBtn);
-        buttonPanel.add(importCsvBtn);
+        buttonPanel.add(exportReportBtn);
         buttonPanel.add(viewTransactionsBtn);
         buttonPanel.add(aiRecommendBtn);
         buttonPanel.add(feedbackBtn);
@@ -264,45 +269,56 @@ public class TransactionDashboardPanel extends JPanel {
     }
     
     /**
-     * 导入CSV文件
+     * 打开报告UI界面
      */
-    private void importCsvFile() {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Select CSV File");
-        fileChooser.setFileFilter(new FileNameExtensionFilter("CSV Files", "csv"));
-        
-        int result = fileChooser.showOpenDialog(this);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fileChooser.getSelectedFile();
-            try {
-                // 使用CSVImportManager导入文件
-                int count = csvImportManager.importTransactions(selectedFile).size();
+    private void openReportUI() {
+        try {
+            // 创建交易列表以将分类模块的交易转换为报告UI需要的格式
+            List<com.finance.tracker.report.Transaction> reportTransactions = new ArrayList<>();
+            
+            // 获取收入交易
+            List<com.finance.tracker.classification.model.Transaction> incomeTransactions = 
+                transactionManager.getTransactionsByType(CategoryType.INCOME);
+            
+            // 获取支出交易
+            List<com.finance.tracker.classification.model.Transaction> expenseTransactions = 
+                transactionManager.getTransactionsByType(CategoryType.EXPENSE);
+            
+            // 合并所有交易
+            List<com.finance.tracker.classification.model.Transaction> allTransactions = new ArrayList<>();
+            allTransactions.addAll(incomeTransactions);
+            allTransactions.addAll(expenseTransactions);
+            
+            // 转换交易格式
+            for (com.finance.tracker.classification.model.Transaction t : allTransactions) {
+                // 日期格式转换：将LocalDateTime转为yyyy-MM-dd字符串
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                String dateStr = t.getDateTime().toLocalDate().format(formatter);
                 
-                // 显示导入结果
-                JOptionPane.showMessageDialog(
-                    this,
-                    count + " transactions imported successfully",
-                    "Import Complete",
-                    JOptionPane.INFORMATION_MESSAGE
-                );
-                
-                // 全量同步到AI模型
-                transactionManager.syncAllTransactionsToAIModel();
-                
-                // 更新同步时间
-                lastSyncTime = LocalDateTime.now();
-                
-                // 更新状态栏
-                updateStatusBar("Imported " + count + " transactions from CSV");
-                
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(
-                    this,
-                    "Error importing CSV: " + e.getMessage(),
-                    "Import Error",
-                    JOptionPane.ERROR_MESSAGE
-                );
+                // 创建报告UI需要的Transaction对象
+                reportTransactions.add(new com.finance.tracker.report.Transaction(
+                    dateStr,
+                    t.getCategory().getName(),
+                    t.getAmount().doubleValue(),  // BigDecimal转为double
+                    t.getDescription() != null ? t.getDescription() : ""
+                ));
             }
+            
+            // 创建并显示报告窗口
+            com.finance.tracker.report.ReportAndNotificationUI reportUI = 
+                new com.finance.tracker.report.ReportAndNotificationUI(reportTransactions);
+            reportUI.setVisible(true);
+            
+            // 更新状态栏
+            updateStatusBar("Report UI opened");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(
+                this,
+                "Error opening report UI: " + e.getMessage(),
+                "Error",
+                JOptionPane.ERROR_MESSAGE
+            );
+            e.printStackTrace();
         }
     }
     
