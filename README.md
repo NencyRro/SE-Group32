@@ -269,3 +269,237 @@ The basic functions have been basically realized, but the panel layout and funct
 ## 致谢
 
 感谢所有为项目做出贡献的开发者！
+
+# AI Personal Finance Management System
+
+This project is a Java-based intelligent personal finance management system.The project contains financial application related features, including financial tracking, feedback system and report generation. It supports manual/automatic data entry, AI categorised transactions, consumption analysis and forecasting. Adopt agile development methodology and follow modular design principles to ensure code scalability and maintainability.
+
+## Core functional modules
+### 1. Data Input and Management
+- Manual input: supports users to enter transaction records (amount, time, description, etc.) directly through the GUI interface
+- Automatic Import: Support importing transaction data in CSV/JSON format from banks/financial applications (e.g. WeChat Pay, Alipay).
+- File Storage: All data is stored locally in text files (CSV/JSON/XML), no database or network connection is required.
+
+### 2. AI Transaction Classification and Correction
+- Intelligent Classification: Automatically classify transactions (catering, transport, rent, etc.) through keyword matching, amount pattern recognition and date features
+- Human intervention: Allow users to manually correct AI misclassification (e.g. correcting ‘WeChat Red Packet’ from ‘Income’ to ‘Gift’).
+- Adaptation to Chinese scenarios: identify localised consumption scenarios such as Chinese New Year red packets and double eleven shopping.
+
+### 3. Consumption Analysis and Forecasting
+- Visual report: Generate visual charts such as monthly consumption trend charts and pie charts (JSON/XML output).
+- Budget Recommendations: Provide personalised budget plans and savings targets based on historical consumption data.
+- Anomaly Detection: Identify unconventional large expenditures (e.g. a single transaction that exceeds 300% of average monthly consumption)
+
+### 4. Feedback System
+- User Feedback Collection: Provide GUI portal to support users to submit feedback via text box input, and the feedback content can be automatically associated with the user's account information for easy follow-up.
+- Problem Reporting: Users can mark the type of problems (e.g. functional failures, interface display problems, data errors, etc.), upload relevant screenshots to assist in the description, and the system automatically generates a unique problem number to facilitate users' progress enquiries.
+- FAQ management: present frequently asked questions in the form of Q&A, support keyword search, update the FAQ database regularly based on user feedback and hot issues, and provide intelligent recommendation of related questions to guide users to find answers quickly.
+
+## Technical Requirements
+### 1. Project structure
+The project has been organised according to the Maven standard structure:
+- src/main/java: contains all Java source code.
+- src/main/resources: Contains the project resource files.
+- target: Contains compiled and packaged files.
+- pom.xml: Maven project configuration file.
+
+```
+SE-Group32/
+├── config/                    # Configuration files
+│   └── currency_config.json   # AI classification rules
+├── data/                      # Data files
+│   ├── recommendations.json   # Input files (CSV/JSON)
+│   ├── transactions.csv       # Transaction data files
+│   └── user_profile.json      # User profile configuration
+├── resources/feedback/
+│    └── feedback.txt          # Generated expense analysis reports
+├── src/
+│   ├── main/
+│   │   ├── java/com/          # Java source code
+│   │   │       └── finance/
+│   │   │           └── tracker/
+│   │   │               ├── ai/                # AI-related functional modules
+│   │   │               ├── classification/    # Classification module
+│   │   │               ├── feedback/          # Feedback system module
+│   │   │               ├── integration/       # Integration module
+│   │   │               ├── localization/      # Localization module
+│   │   │               ├── profile/           # User profile module
+│   │   │               ├── report/            # Report generation module
+│   │   │               ├── statistics/        # Statistical analysis module
+│   │   │               └── ui/                # Graphical interface module
+│   │   └── resources/       # Resource files
+│   │       ├── config/      # Configuration resources
+│   │       ├── feedback/    # Feedback-related resources
+│   │       └── data         # Data resources
+│   └── test/java/com/       # Test files (unit test code)
+├── target/                  # Build output directory
+│   └── finance-tracker.jar  # Executable JAR (with third-party dependencies)
+└── pom.xml                  # Maven project configuration file (dependency and build rules)
+```
+
+### 2. Technology Stack
+- Java 17
+- Swing (GUI)
+- JFreeChart (chart generation)
+- JSON Simple (JSON parsing)
+- Maven (Dependency Management)
+
+### 3. Main Dependencies
+- Apache HttpClient 4.5.13
+- Apache HttpCore 4.4.12
+- JSON library (json-20160810.jar, json-simple-1.1.1.jar)
+- JFreeChart 1.0.19 and JCommon 1.0.23
+
+### 4. **Code specification**
+- Modular design: adopting MVC architecture, separating AI classifier, data processor and GUI controller.
+- Extensibility: support future addition of new data sources (e.g. banking API extension) through interface design
+- Error handling: implement basic constraints such as transaction date validation and non-negative amount checking
+
+### 5. **Testing and Documentation***
+- Unit test: JUnit covers the core classification algorithm (coverage ≥ 80%)
+- User manual: operation guide with screenshots (PDF format)
+- API documentation: automatically generated via Javadoc
+
+## Agile development requirements
+### 1. Iteration management
+- One iteration cycle every 2 weeks, output demoable version (v1~v4)
+- Use Scrum: daily standups, sprint planning meetings, retrospective meetings
+
+### 2. GitHub Collaboration
+- Branching strategy: each member maintains a separate development branch (e.g. `feature/ai-classifier`).
+- Commit specification: Atomic commits + semanticised messages (`feat: add red packet detection logic #12`)
+- Merge process: Pull Request requires at least 1 person Code Review
+
+### 3. AI-assisted restrictions
+- Data collection: AI is prohibited to generate virtual transaction data, and real user data samples should be collected.
+- Code validation: AI-generated code must pass manual logic review (e.g., classification rule boundary test)
+- Ethical review: Ensure that AI recommendations do not contain gender/geographical bias (e.g., ‘women should spend less on entertainment’ type of recommendations).
+
+
+## Data format
+### 1. csv import format
+
+CSV import function is mainly parsed and processed by CSVImportManager.
+
+| Column Number | Field Name | Data Type | Description
+|------|--------------|----------------|----------------------------------------------------------------------|
+| 1 | ID | String | Unique transaction identifier (e.g., UUID), auto-generated when empty |
+| 2 | DateTime | DateTime string | Format: `yyyy-MM-dd HH:mm:ss`, accurate to seconds |
+| 3 | CategoryID | integer | must be a registered category ID in the system (registered through `CategoryManager`) |
+| 4 | CategoryType | INCOME/EXPENSE | Category type, must be an uppercase enumeration value (`CategoryType.valueOf(...) ` matches) |
+| 5 | Amount | Fractional (up to two digits) | Amount, `BigDecimal` type, must be > 0 |
+| 6 | Description | string | optional description, wrap in English double quotes when containing commas, internal `‘` escaped to `’"` |
+
+#### Example contents
+```csv
+ID,DateTime,CategoryID,CategoryType,Amount,Description
+abc123,2024-04-20 14:30:00,1,EXPENSE,36.50, ‘Lunch Takeout’
+def456,2024-04-20 18:00:00,2,EXPENSE,88.88, ‘Clothing Shopping’
+ghi789,2024-04-21 10:00:00,8,INCOME,5000.00, ‘Payroll’
+```
+
+#### Import failure handling
+- **Exception catching**: `parseTransaction()` method catches the exception and outputs the error to the console, without terminating the import process.
+- **Row level skip**: when a row fails to be parsed, the row is skipped without affecting other data.
+- **Unknown Category Handling**: Automatically create ‘unknown category’ when `CategoryID` doesn't exist and add it to the system.
+
+#### Data Preprocessing Logic
+| Target | Description
+|--------------|---------------------------------------------------------------------|
+| De-duplication | Exclude duplicate transaction records by ID |  2️↪Meanwhile
+| Format standardisation | - Amounts are standardised to 2 decimal places<br>- Description removes invalid characters such as line feeds, spaces etc |
+| Generate clean data | Processed data is written to `transactions.csv` and added to the system |
+
+
+### 2. Reading data
+The application reads financial data from `data/data.json` in the following format:
+
+```json
+{
+  "year": 2024,
+  "bills": [
+    {
+      "month": "October",
+      "income": 5000,
+      "expenses": [
+        {"category": "food", "amount": 800},
+        ...
+      ],
+      "total_expenses": 4200,
+      "balance": 800
+    },
+    ...
+  ]
+}
+```
+
+## Installation instructions
+### Clone the project
+```
+git clone https://github.com/NencyRro/SE-Group32.git
+cd SE-Group32
+```
+
+### Build the project
+```
+mvn clean package
+```
+
+### Run the application
+```bash
+java -jar target/finance-application-1.0-SNAPSHOT-jar-with-dependencies.jar
+```
+### Package the project
+```json
+mvn package
+```
+
+This will generate two jar files in the target directory:
+```json
+finance-application-1.0-SNAPSHOT.jar: does not contain dependent jar packages
+finance-application-1.0-SNAPSHOT-jar-with-dependencies.jar: executable jar package with all dependencies
+```
+
+### Prerequisites
+
+- Java 17 or later
+- Maven
+
+## Version history
+### 1. April 13th, version 1.0：
+Improve the basic panel.
+The deepseek API has been successfully called in the software.
+The basic functions have been basically realized, but the panel layout and function integration still need to be adjusted.
+### 2. April 20, version 2.0 updated some current issues:
+- Delete the region settings and only keep the currency switching function.
+- Change the Chinese interface to English interface.
+- Change the holiday information from fixed sample data to dynamic acquisition based on the current date.
+- The transaction category is changed from Chinese to English hard-coded format, eliminating the bug that AI will reply in Chinese.
+- The predefined data of AI suggestion response is changed to be based on actual holiday information and transaction data.
+- Optimize the current UI interface, add dynamic effects, and delete redundant panel code files.
+
+## Notes
+1. The project contains a GUI interface, you need to run in an environment with a graphical interface.
+2. All dependencies have been configured in pom.xml, Maven will automatically download the required dependencies.
+3. the project compilation and packaging has been verified, all dependencies are correct.
+4. If you need to modify or extend the project, please follow Maven's standard practices.
+
+## Frequently Asked Questions
+- Dependency download issues: Check Maven configuration
+- GUI display abnormality: Make sure the system supports graphical interface.
+- Data backup: Data files are stored in the `data` directory, so please back them up regularly.
+
+## Conversion Instructions
+The original project has been fully converted to Maven format, the main changes include:
+- Creating a standard Maven directory structure
+- Converting jar dependencies in the lib directory to Maven dependencies.
+- Configuring the necessary Maven plugins
+- Ensuring that all functionality is working correctly
+
+## Contact information
+- Project Maintainer: [Maintainer's name].
+- Email: [email address].
+- Project address: [https://github.com/NencyRro/SE-Group32](https://github.com/NencyRro/SE-Group32)
+
+## Acknowledgements
+Thanks to all the developers who contributed to the project!
