@@ -1,0 +1,11 @@
+{
+  "api_key": "sample_key_123456",
+  "base_url": "https://api.finance.example.com/v1",
+  "timeout": 30,
+  "retry_attempts": 3,
+  "endpoints": {
+    "transactions": "/transactions",
+    "categories": "/categories",
+    "reports": "/reports"
+  }
+}

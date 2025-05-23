@@ -1,0 +1,10 @@
+{
+  "region": "CN",
+  "language": "zh-CN",
+  "date_format": "yyyy-MM-dd",
+  "time_format": "HH:mm:ss",
+  "currency_format": "¥#,##0.00",
+  "decimal_separator": ".",
+  "thousands_separator": ",",
+  "first_day_of_week": 1
+}

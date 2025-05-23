@@ -1,1 +1,0 @@
-packageSearchIndex = [{"l":"com.finance.module.ai","h":"","u":""},{"l":"所有程序包","h":"","u":"allpackages-index.html"}]

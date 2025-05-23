@@ -1,0 +1,23 @@
+Q: What is this application for?
+A: This is a personal finance tracking application designed to help you manage your income, expenses, and financial goals.
+
+Q: How do I add a new transaction?
+A: You can add a new transaction by going to the "Transaction Management" section and using the "Add New Transaction" form.
+
+Q: Can I import existing transaction data?
+A: Yes, the application supports importing transaction data from a CSV file. You can find this option in the "Transaction Management" section.
+
+Q: How does the AI recommendation feature work?
+A: The AI module analyzes your transaction patterns to provide personalized recommendations, such as budget suggestions, potential savings areas, and spending insights.
+
+Q: Where is my financial data stored?
+A: Your data, including transactions and settings, is stored locally on your computer.
+
+Q: How can I change the currency?
+A: You can adjust the currency settings in the "Currency" section of the main menu.
+
+Q: How can I provide feedback or report a problem?
+A: Please use the "Submit Feedback" or "Report Problem" options available in the Feedback Center.
+
+Q: Can I view summaries or reports of my spending?
+A: Yes, the application allows you to view transaction records and potentially generate reports to understand your financial activity.
