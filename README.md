@@ -262,8 +262,8 @@ The basic functions have been basically realized, but the panel layout and funct
 
 ## 联系方式
 
-- **项目维护者**：[维护者姓名]
-- **邮箱**：[邮箱地址]
+- **项目维护者**：[许嘉蕾]
+- **邮箱**：[xujialeileo@gmail.com]
 - **项目地址**：[https://github.com/NencyRro/SE-Group32](https://github.com/NencyRro/SE-Group32)
 
 ## 致谢
@@ -497,8 +497,8 @@ The original project has been fully converted to Maven format, the main changes 
 - Ensuring that all functionality is working correctly
 
 ## Contact information
-- Project Maintainer: [Maintainer's name].
-- Email: [email address].
+- Project Maintainer: [Jialei Xu].
+- Email: [xujialeileo@gmail.com].
 - Project address: [https://github.com/NencyRro/SE-Group32](https://github.com/NencyRro/SE-Group32)
 
 ## Acknowledgements
